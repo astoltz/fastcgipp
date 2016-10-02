@@ -336,7 +336,7 @@ unsigned int openfds()
     closedir(directory);
     return count;
 }
-#elif
+#else
 unsigned int openfds()
 {
     return 0;

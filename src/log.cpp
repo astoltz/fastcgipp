@@ -40,6 +40,10 @@
 #include <limits.h>
 #include <sys/types.h>
 
+#ifndef HOST_NAME_MAX
+#define HOST_NAME_MAX 256
+#endif
+
 //! Topmost namespace for the fastcgi++ library
 namespace Fastcgipp
 {
@@ -69,6 +73,8 @@ namespace Fastcgipp
         {
             std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
             std::wostringstream ss;
+
+#ifdef program_invocation_name
             try
             {
                 ss << converter.from_bytes(
@@ -81,6 +87,9 @@ namespace Fastcgipp
                 WARNING_LOG("Error in program name code conversion from utf8")
                 ss << "unknown";
             }
+#else
+            ss << "unknown";
+#endif
 
             ss << '[' << getpid() << ']';
             return ss.str();

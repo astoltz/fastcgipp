@@ -34,7 +34,7 @@
 
 #ifdef FASTCGIPP_LINUX
 #include <sys/epoll.h>
-#elif defined FASTCGIPP_UNIX
+#elif defined FASTCGIPP_UNIX || defined FASTCGIPP_OSX
 #include <algorithm>
 #endif
 
@@ -49,6 +49,14 @@
 #include <pwd.h>
 #include <grp.h>
 #include <cstring>
+
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif
+
+#ifndef POLLRDHUP
+#define POLLRDHUP 0x2000
+#endif
 
 Fastcgipp::Socket::Socket(
         const socket_t& socket,
@@ -460,7 +468,7 @@ Fastcgipp::Socket Fastcgipp::SocketGroup::poll(bool block)
     const auto& pollErr = EPOLLERR;
     const auto& pollHup = EPOLLHUP;
     const auto& pollRdHup = EPOLLRDHUP;
-#elif defined FASTCGIPP_UNIX
+#elif defined FASTCGIPP_UNIX || defined FASTCGIPP_OSX
     const auto& pollIn = POLLIN;
     const auto& pollErr = POLLERR;
     const auto& pollHup = POLLHUP;
@@ -486,7 +494,7 @@ Fastcgipp::Socket Fastcgipp::SocketGroup::poll(bool block)
                 &epollEvent,
                 1,
                 block?-1:0);
-#elif defined FASTCGIPP_UNIX
+#elif defined FASTCGIPP_UNIX || defined FASTCGIPP_OSX
         pollResult = ::poll(
                 m_poll.data(),
                 m_poll.size(),
@@ -504,7 +512,7 @@ Fastcgipp::Socket Fastcgipp::SocketGroup::poll(bool block)
 #ifdef FASTCGIPP_LINUX
             const auto& socketId = epollEvent.data.fd;
             const auto& events = epollEvent.events;
-#elif defined FASTCGIPP_UNIX
+#elif defined FASTCGIPP_UNIX || defined FASTCGIPP_OSX
             const auto fd = std::find_if(
                     m_poll.begin(),
                     m_poll.end(),
@@ -648,7 +656,7 @@ bool Fastcgipp::SocketGroup::pollAdd(const socket_t socket)
     event.data.fd = socket;
     event.events = EPOLLIN | EPOLLERR | EPOLLHUP | EPOLLRDHUP;
     return epoll_ctl(m_poll, EPOLL_CTL_ADD, socket, &event) != -1;
-#elif defined FASTCGIPP_UNIX
+#elif defined FASTCGIPP_UNIX || defined FASTCGIPP_OSX
     const auto fd = std::find_if(
             m_poll.begin(),
             m_poll.end(),
@@ -670,7 +678,7 @@ bool Fastcgipp::SocketGroup::pollDel(const socket_t socket)
 {
 #ifdef FASTCGIPP_LINUX
     return epoll_ctl(m_poll, EPOLL_CTL_DEL, socket, nullptr) != -1;
-#elif defined FASTCGIPP_UNIX
+#elif defined FASTCGIPP_UNIX || defined FASTCGIPP_OSX
     const auto fd = std::find_if(
             m_poll.begin(),
             m_poll.end(),

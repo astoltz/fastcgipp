@@ -42,7 +42,7 @@
 
 #include "fastcgi++/config.hpp"
 
-#ifdef FASTCGIPP_UNIX
+#if defined FASTCGIPP_UNIX || defined FASTCGIPP_OSX
 #include <vector>
 #include <poll.h>
 #endif
@@ -56,7 +56,7 @@ namespace Fastcgipp
 #ifdef FASTCGIPP_LINUX
     //! Our polling type using the Linux kernel is simply an int
     typedef const int poll_t;
-#elif defined FASTCGIPP_UNIX
+#elif defined FASTCGIPP_UNIX || defined FASTCGIPP_OSX
     //! Our polling type using generic Unix is an array of pollfds
     typedef std::vector<pollfd> poll_t;
 #endif
